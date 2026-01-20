@@ -130,10 +130,14 @@ app.post('/api/login', async (req, res) => {
 
 // Order Route
 app.post('/api/orders', verifyToken, async (req, res) => {
-  const { items, note, total, username } = req.body;
+  const { items, note, total, username, customerName, customerPhone, customerAddress, contactMethod } = req.body;
   
   if (!items || items.length === 0) {
     return res.status(400).json({ error: 'No items in order' });
+  }
+  
+  if (!customerName || !customerPhone || !customerAddress || !contactMethod) {
+    return res.status(400).json({ error: 'Missing customer information' });
   }
   
   try {
@@ -142,6 +146,10 @@ app.post('/api/orders', verifyToken, async (req, res) => {
     const result = await ordersCollection.insertOne({
       userId: new ObjectId(req.userId),
       username: req.username,
+      customerName,
+      customerPhone,
+      customerAddress,
+      contactMethod,
       items,
       note: note || '',
       total,
@@ -171,6 +179,10 @@ app.get('/api/orders', verifyToken, async (req, res) => {
     
     res.json(orders.map(order => ({
       id: order._id.toString(),
+      customerName: order.customerName,
+      customerPhone: order.customerPhone,
+      customerAddress: order.customerAddress,
+      contactMethod: order.contactMethod,
       items: order.items,
       note: order.note,
       total: order.total,
@@ -180,6 +192,59 @@ app.get('/api/orders', verifyToken, async (req, res) => {
   } catch (err) {
     console.error('Get orders error:', err);
     res.status(500).json({ error: 'Failed to get orders' });
+  }
+});
+
+// Get all orders for shop
+app.get('/api/shop/orders', verifyToken, async (req, res) => {
+  try {
+    const ordersCollection = db.collection('orders');
+    
+    const orders = await ordersCollection
+      .find({})
+      .sort({ createdAt: -1 })
+      .toArray();
+    
+    res.json(orders.map(order => ({
+      id: order._id.toString(),
+      username: order.username,
+      customerName: order.customerName,
+      customerPhone: order.customerPhone,
+      customerAddress: order.customerAddress,
+      contactMethod: order.contactMethod,
+      items: order.items,
+      note: order.note,
+      total: order.total,
+      status: order.status,
+      createdAt: order.createdAt
+    })));
+  } catch (err) {
+    console.error('Get shop orders error:', err);
+    res.status(500).json({ error: 'Failed to get orders' });
+  }
+});
+
+// Update order status
+app.put('/api/orders/:orderId', verifyToken, async (req, res) => {
+  const { orderId } = req.params;
+  const { status } = req.body;
+  
+  if (!status) {
+    return res.status(400).json({ error: 'Status is required' });
+  }
+  
+  try {
+    const ordersCollection = db.collection('orders');
+    
+    await ordersCollection.updateOne(
+      { _id: new ObjectId(orderId) },
+      { $set: { status } }
+    );
+    
+    res.json({ message: 'Order status updated' });
+  } catch (err) {
+    console.error('Update order error:', err);
+    res.status(500).json({ error: 'Failed to update order' });
   }
 });
 

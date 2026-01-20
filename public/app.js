@@ -26,6 +26,10 @@ const closeBtn = document.querySelector('.close');
 const cancelBtn = document.querySelector('.btn-cancel');
 const orderNote = document.getElementById('order-note');
 const totalPriceEl = document.getElementById('total-price');
+const orderName = document.getElementById('order-name');
+const orderPhone = document.getElementById('order-phone');
+const orderAddress = document.getElementById('order-address');
+const orderContact = document.getElementById('order-contact');
 
 let typingTimeout;
 
@@ -173,6 +177,10 @@ function closeOrderModal() {
 
 function resetOrderForm() {
   document.querySelectorAll('input[name="food"]').forEach(cb => cb.checked = false);
+  orderName.value = '';
+  orderPhone.value = '';
+  orderAddress.value = '';
+  orderContact.value = '';
   orderNote.value = '';
   updateTotalPrice();
 }
@@ -186,6 +194,16 @@ function updateTotalPrice() {
 }
 
 async function submitOrder() {
+  const name = orderName.value.trim();
+  const phone = orderPhone.value.trim();
+  const address = orderAddress.value.trim();
+  const contact = orderContact.value;
+  
+  if (!name || !phone || !address || !contact) {
+    alert('Vui lòng điền đủ thông tin người đặt');
+    return;
+  }
+  
   const items = Array.from(document.querySelectorAll('input[name="food"]:checked')).map(cb => ({
     name: cb.value,
     price: parseInt(cb.dataset.price)
@@ -210,14 +228,18 @@ async function submitOrder() {
         items,
         note,
         total,
-        username
+        username,
+        customerName: name,
+        customerPhone: phone,
+        customerAddress: address,
+        contactMethod: contact
       })
     });
     
     if (res.ok) {
-      const orderMsg = `🍜 Đặt hàng Mường Lèo: ${items.map(i => i.name).join(', ')} | Tổng: ${total.toLocaleString('vi-VN')}đ ${note ? '(Ghi chú: ' + note + ')' : ''}`;
+      const orderMsg = `🍜 Đặt hàng: ${items.map(i => i.name).join(', ')} | Người đặt: ${name} | SĐT: ${phone} | Tổng: ${total.toLocaleString('vi-VN')}đ`;
       socket.emit('chatMessage', orderMsg);
-      alert('✅ Đặt hàng thành công!');
+      alert('✅ Đặt hàng thành công! Vui lòng chờ xác nhận từ shop.');
       closeOrderModal();
     } else {
       alert('❌ Lỗi khi đặt hàng');

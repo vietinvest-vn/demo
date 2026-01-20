@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HiChat - Đơn hàng của tôi</title>
+  <link rel="stylesheet" href="/style.css" />
+  <style>
+    .orders-container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .orders-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid #1f2937;
+    }
+
+    .orders-header h1 {
+      margin: 0;
+      color: #f97316;
+    }
+
+    .back-btn {
+      padding: 10px 20px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      text-decoration: none;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .back-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+    }
+
+    .orders-list {
+      display: grid;
+      gap: 20px;
+    }
+
+    .order-card {
+      background: var(--card);
+      border: 1px solid #1f2937;
+      border-radius: 12px;
+      padding: 20px;
+      transition: all 0.2s;
+    }
+
+    .order-card:hover {
+      border-color: #f97316;
+      box-shadow: 0 8px 24px rgba(249, 115, 22, 0.15);
+    }
+
+    .order-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 15px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #1f2937;
+    }
+
+    .order-id {
+      font-size: 12px;
+      color: var(--muted);
+      font-family: monospace;
+    }
+
+    .order-status {
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .status-pending {
+      background: rgba(251, 146, 60, 0.2);
+      color: #fb923c;
+    }
+
+    .status-confirmed {
+      background: rgba(59, 130, 246, 0.2);
+      color: #60a5fa;
+    }
+
+    .status-shipped {
+      background: rgba(34, 197, 94, 0.2);
+      color: #86efac;
+    }
+
+    .status-delivered {
+      background: rgba(34, 197, 94, 0.2);
+      color: #86efac;
+    }
+
+    .order-info {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .info-block h4 {
+      margin: 0 0 10px 0;
+      color: #f97316;
+      font-size: 13px;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .info-item {
+      margin: 8px 0;
+      font-size: 13px;
+      color: var(--text);
+    }
+
+    .info-item strong {
+      color: var(--text);
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 2px;
+    }
+
+    .order-items {
+      background: rgba(249, 115, 22, 0.08);
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+    }
+
+    .order-items h4 {
+      margin: 0 0 12px 0;
+      color: #f97316;
+      font-size: 13px;
+      text-transform: uppercase;
+    }
+
+    .items-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .items-list li {
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      font-size: 13px;
+      color: var(--text);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .items-list li:last-child {
+      border-bottom: none;
+    }
+
+    .order-total {
+      text-align: right;
+      padding: 15px 0;
+      border-top: 2px solid #1f2937;
+      font-size: 16px;
+      font-weight: 700;
+      color: #f97316;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--muted);
+    }
+
+    .empty-state-icon {
+      font-size: 48px;
+      margin-bottom: 20px;
+    }
+
+    .empty-state h3 {
+      margin: 0 0 10px 0;
+      color: var(--text);
+    }
+
+    @media (max-width: 768px) {
+      .order-info {
+        grid-template-columns: 1fr;
+      }
+
+      .orders-header {
+        flex-direction: column;
+        gap: 15px;
+        align-items: flex-start;
+      }
+
+      .back-btn {
+        width: 100%;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-screen">
+    <div class="orders-container">
+      <div class="orders-header">
+        <h1>🍜 Đơn hàng của tôi</h1>
+        <a href="/chat.html" class="back-btn">← Quay lại Chat</a>
+      </div>
+
+      <div id="orders-list" class="orders-list">
+        <div class="empty-state">
+          <div class="empty-state-icon">📭</div>
+          <h3>Chưa có đơn hàng</h3>
+          <p>Hãy đặt một đơn hàng từ trang chat để xem tại đây</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Check auth
+    const token = localStorage.getItem('hichat:token');
+    const username = localStorage.getItem('hichat:username');
+
+    if (!token || !username) {
+      window.location.href = '/login.html';
+    }
+
+    const ordersList = document.getElementById('orders-list');
+
+    async function loadOrders() {
+      try {
+        const res = await fetch('/api/orders', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (!res.ok) {
+          window.location.href = '/login.html';
+          return;
+        }
+
+        const orders = await res.json();
+
+        if (orders.length === 0) {
+          ordersList.innerHTML = `
+            <div class="empty-state">
+              <div class="empty-state-icon">📭</div>
+              <h3>Chưa có đơn hàng</h3>
+              <p>Hãy đặt một đơn hàng từ trang chat để xem tại đây</p>
+            </div>
+          `;
+          return;
+        }
+
+        ordersList.innerHTML = orders.map(order => {
+          const date = new Date(order.createdAt);
+          const formattedDate = date.toLocaleDateString('vi-VN', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+
+          return `
+            <div class="order-card">
+              <div class="order-header">
+                <div>
+                  <div class="order-id">Đơn hàng #${order.id.substring(0, 8).toUpperCase()}</div>
+                  <div style="color: var(--muted); font-size: 12px; margin-top: 4px;">${formattedDate}</div>
+                </div>
+                <span class="order-status status-${order.status}">${getStatusText(order.status)}</span>
+              </div>
+
+              <div class="order-info">
+                <div class="info-block">
+                  <h4>👤 Thông tin người đặt</h4>
+                  <div class="info-item">
+                    <strong>Tên:</strong> ${order.customerName}
+                  </div>
+                  <div class="info-item">
+                    <strong>Số điện thoại:</strong> ${order.customerPhone}
+                  </div>
+                  <div class="info-item">
+                    <strong>Liên lạc:</strong> ${getContactMethodText(order.contactMethod)}
+                  </div>
+                </div>
+                <div class="info-block">
+                  <h4>📍 Địa chỉ giao hàng</h4>
+                  <div class="info-item">
+                    ${order.customerAddress}
+                  </div>
+                </div>
+              </div>
+
+              <div class="order-items">
+                <h4>🛒 Danh sách mon ăn</h4>
+                <ul class="items-list">
+                  ${order.items.map(item => `
+                    <li>
+                      <span>${item.name}</span>
+                      <span>${item.price.toLocaleString('vi-VN')}đ</span>
+                    </li>
+                  `).join('')}
+                </ul>
+              </div>
+
+              ${order.note ? `
+                <div style="background: rgba(255, 255, 255, 0.05); padding: 12px; border-radius: 6px; margin-bottom: 15px; font-size: 13px; color: var(--muted);">
+                  <strong style="color: var(--text);">Ghi chú:</strong> ${order.note}
+                </div>
+              ` : ''}
+
+              <div class="order-total">
+                Tổng cộng: ${order.total.toLocaleString('vi-VN')}đ
+              </div>
+            </div>
+          `;
+        }).join('');
+      } catch (err) {
+        console.error('Error loading orders:', err);
+        ordersList.innerHTML = '<p style="color: #ef4444;">Lỗi khi tải đơn hàng</p>';
+      }
+    }
+
+    function getStatusText(status) {
+      const statuses = {
+        'pending': '⏳ Chờ xác nhận',
+        'confirmed': '✓ Đã xác nhận',
+        'shipped': '🚚 Đang giao',
+        'delivered': '✓ Đã giao'
+      };
+      return statuses[status] || status;
+    }
+
+    function getContactMethodText(method) {
+      const methods = {
+        'phone': '📞 Điện thoại',
+        'sms': '💬 SMS',
+        'zalo': '💬 Zalo',
+        'facebook': '📘 Facebook'
+      };
+      return methods[method] || method;
+    }
+
+    // Load orders on page load
+    loadOrders();
+
+    // Refresh orders every 30 seconds
+    setInterval(loadOrders, 30000);
+  </script>
+</body>
+</html>

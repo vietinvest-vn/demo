@@ -1,0 +1,493 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HiChat Shop - Quản lý đơn hàng</title>
+  <link rel="stylesheet" href="/style.css" />
+  <style>
+    .shop-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .shop-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid #1f2937;
+    }
+
+    .shop-header h1 {
+      margin: 0;
+      color: #f97316;
+    }
+
+    .shop-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .back-btn,
+    .refresh-btn {
+      padding: 10px 20px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      text-decoration: none;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .back-btn:hover,
+    .refresh-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+    }
+
+    .filter-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      padding: 8px 16px;
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+
+    .filter-btn.active {
+      background: #f97316;
+      border-color: #f97316;
+      color: white;
+    }
+
+    .filter-btn:hover {
+      border-color: #f97316;
+    }
+
+    .orders-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 20px;
+    }
+
+    .order-card {
+      background: var(--card);
+      border: 2px solid #1f2937;
+      border-radius: 12px;
+      padding: 20px;
+      transition: all 0.2s;
+    }
+
+    .order-card:hover {
+      border-color: #f97316;
+      box-shadow: 0 8px 24px rgba(249, 115, 22, 0.15);
+    }
+
+    .order-card.pending {
+      border-left: 4px solid #fb923c;
+    }
+
+    .order-card.confirmed {
+      border-left: 4px solid #60a5fa;
+    }
+
+    .order-card.shipped {
+      border-left: 4px solid #a78bfa;
+    }
+
+    .order-card.delivered {
+      border-left: 4px solid #34d399;
+    }
+
+    .order-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #1f2937;
+    }
+
+    .order-id {
+      font-size: 12px;
+      color: var(--muted);
+      font-family: monospace;
+    }
+
+    .order-status {
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .status-pending {
+      background: rgba(251, 146, 60, 0.2);
+      color: #fb923c;
+    }
+
+    .status-confirmed {
+      background: rgba(59, 130, 246, 0.2);
+      color: #60a5fa;
+    }
+
+    .status-shipped {
+      background: rgba(168, 85, 247, 0.2);
+      color: #a78bfa;
+    }
+
+    .status-delivered {
+      background: rgba(52, 211, 153, 0.2);
+      color: #34d399;
+    }
+
+    .customer-info {
+      margin-bottom: 15px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #1f2937;
+    }
+
+    .info-row {
+      font-size: 13px;
+      margin: 6px 0;
+      color: var(--text);
+    }
+
+    .info-label {
+      color: #f97316;
+      font-weight: 600;
+      display: inline-block;
+      width: 70px;
+    }
+
+    .items-summary {
+      background: rgba(249, 115, 22, 0.08);
+      padding: 12px;
+      border-radius: 6px;
+      margin: 12px 0;
+      font-size: 12px;
+    }
+
+    .items-summary strong {
+      display: block;
+      margin-bottom: 8px;
+      color: #f97316;
+    }
+
+    .item {
+      padding: 4px 0;
+      color: var(--text);
+    }
+
+    .order-total {
+      text-align: right;
+      padding: 10px 0;
+      border-top: 1px solid #1f2937;
+      margin: 12px 0;
+      font-weight: 700;
+      color: #f97316;
+      font-size: 14px;
+    }
+
+    .status-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .status-btn {
+      padding: 8px 12px;
+      border: none;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-transform: uppercase;
+    }
+
+    .status-btn-confirm {
+      background: #3b82f6;
+      color: white;
+    }
+
+    .status-btn-confirm:hover {
+      background: #2563eb;
+    }
+
+    .status-btn-ship {
+      background: #a855f7;
+      color: white;
+    }
+
+    .status-btn-ship:hover {
+      background: #9333ea;
+    }
+
+    .status-btn-deliver {
+      background: #22c55e;
+      color: white;
+      grid-column: 1 / -1;
+    }
+
+    .status-btn-deliver:hover {
+      background: #16a34a;
+    }
+
+    .status-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--muted);
+    }
+
+    .empty-state-icon {
+      font-size: 48px;
+      margin-bottom: 20px;
+    }
+
+    .empty-state h3 {
+      margin: 0 0 10px 0;
+      color: var(--text);
+    }
+
+    @media (max-width: 768px) {
+      .orders-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .shop-header {
+        flex-direction: column;
+        gap: 15px;
+        align-items: flex-start;
+      }
+
+      .shop-actions {
+        width: 100%;
+      }
+
+      .back-btn,
+      .refresh-btn {
+        flex: 1;
+      }
+
+      .filter-bar {
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-screen">
+    <div class="shop-container">
+      <div class="shop-header">
+        <h1>🍜 Quản lý đơn hàng Mường Lèo</h1>
+        <div class="shop-actions">
+          <button class="refresh-btn" onclick="loadOrders()">🔄 Làm mới</button>
+          <a href="/chat.html" class="back-btn">← Chat</a>
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <button class="filter-btn active" onclick="filterOrders('all')">📊 Tất cả</button>
+        <button class="filter-btn" onclick="filterOrders('pending')">⏳ Chờ xác nhận</button>
+        <button class="filter-btn" onclick="filterOrders('confirmed')">✓ Đã xác nhận</button>
+        <button class="filter-btn" onclick="filterOrders('shipped')">🚚 Đang giao</button>
+        <button class="filter-btn" onclick="filterOrders('delivered')">✓ Đã giao</button>
+      </div>
+
+      <div id="orders-grid" class="orders-grid">
+        <div class="empty-state">
+          <div class="empty-state-icon">📭</div>
+          <h3>Chưa có đơn hàng</h3>
+          <p>Vui lòng quay lại lúc khác</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const token = localStorage.getItem('hichat:token');
+    const username = localStorage.getItem('hichat:username');
+
+    if (!token || !username) {
+      window.location.href = '/login.html';
+    }
+
+    const ordersGrid = document.getElementById('orders-grid');
+    let allOrders = [];
+    let currentFilter = 'all';
+
+    async function loadOrders() {
+      try {
+        const res = await fetch('/api/shop/orders', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (!res.ok) {
+          if (res.status === 401) {
+            window.location.href = '/login.html';
+          }
+          return;
+        }
+
+        allOrders = await res.json();
+        renderOrders();
+      } catch (err) {
+        console.error('Error loading orders:', err);
+        ordersGrid.innerHTML = '<p style="color: #ef4444;">Lỗi khi tải đơn hàng</p>';
+      }
+    }
+
+    function filterOrders(status) {
+      currentFilter = status;
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      event.target.classList.add('active');
+      renderOrders();
+    }
+
+    function renderOrders() {
+      const filtered = currentFilter === 'all'
+        ? allOrders
+        : allOrders.filter(o => o.status === currentFilter);
+
+      if (filtered.length === 0) {
+        ordersGrid.innerHTML = `
+          <div class="empty-state" style="grid-column: 1 / -1;">
+            <div class="empty-state-icon">📭</div>
+            <h3>Không có đơn hàng</h3>
+            <p>Không tìm thấy đơn hàng phù hợp với bộ lọc</p>
+          </div>
+        `;
+        return;
+      }
+
+      ordersGrid.innerHTML = filtered.map(order => {
+        const date = new Date(order.createdAt);
+        const formattedDate = date.toLocaleDateString('vi-VN', {
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+
+        return `
+          <div class="order-card ${order.status}">
+            <div class="order-header">
+              <div>
+                <div class="order-id">#{order.id.substring(0, 8).toUpperCase()}</div>
+                <div style="font-size: 11px; color: var(--muted); margin-top: 4px;">${formattedDate}</div>
+              </div>
+              <span class="order-status status-${order.status}">${getStatusText(order.status)}</span>
+            </div>
+
+            <div class="customer-info">
+              <div class="info-row"><span class="info-label">👤 Tên:</span> ${order.customerName}</div>
+              <div class="info-row"><span class="info-label">📞 SĐT:</span> ${order.customerPhone}</div>
+              <div class="info-row"><span class="info-label">📍 Địa chỉ:</span><br/><span style="display: inline-block; margin-left: 70px;">${order.customerAddress}</span></div>
+              <div class="info-row"><span class="info-label">💬 Liên lạc:</span> ${getContactMethodText(order.contactMethod)}</div>
+            </div>
+
+            <div class="items-summary">
+              <strong>🛒 Danh sách mon ăn</strong>
+              ${order.items.map(item => `
+                <div class="item">
+                  ${item.name}: <strong>${item.price.toLocaleString('vi-VN')}đ</strong>
+                </div>
+              `).join('')}
+            </div>
+
+            ${order.note ? `<div style="font-size: 12px; color: var(--muted); padding: 8px; background: rgba(255,255,255,0.05); border-radius: 4px;">📝 ${order.note}</div>` : ''}
+
+            <div class="order-total">
+              ${order.total.toLocaleString('vi-VN')}đ
+            </div>
+
+            <div class="status-actions">
+              <button class="status-btn status-btn-confirm" ${order.status !== 'pending' ? 'disabled' : ''} onclick="updateStatus('${order.id}', 'confirmed')">
+                Xác nhận
+              </button>
+              <button class="status-btn status-btn-ship" ${order.status !== 'confirmed' ? 'disabled' : ''} onclick="updateStatus('${order.id}', 'shipped')">
+                Đang giao
+              </button>
+              <button class="status-btn status-btn-deliver" ${order.status !== 'shipped' ? 'disabled' : ''} onclick="updateStatus('${order.id}', 'delivered')">
+                ✓ Giao thành công
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function updateStatus(orderId, newStatus) {
+      try {
+        const res = await fetch(`/api/orders/${orderId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ status: newStatus })
+        });
+
+        if (res.ok) {
+          await loadOrders();
+        }
+      } catch (err) {
+        console.error('Error updating order:', err);
+      }
+    }
+
+    function getStatusText(status) {
+      const statuses = {
+        'pending': '⏳ Chờ xác nhận',
+        'confirmed': '✓ Đã xác nhận',
+        'shipped': '🚚 Đang giao',
+        'delivered': '✓ Đã giao'
+      };
+      return statuses[status] || status;
+    }
+
+    function getContactMethodText(method) {
+      const methods = {
+        'phone': '📞 Điện thoại',
+        'sms': '💬 SMS',
+        'zalo': '💬 Zalo',
+        'facebook': '📘 Facebook'
+      };
+      return methods[method] || method;
+    }
+
+    // Load orders on page load
+    loadOrders();
+
+    // Auto refresh every 20 seconds
+    setInterval(loadOrders, 20000);
+  </script>
+</body>
+</html>

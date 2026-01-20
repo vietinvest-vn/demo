@@ -15,6 +15,8 @@
           <span id="self-name"></span>
           <span class="dot"></span>
           <span>Đang kết nối</span>
+          <a href="/user-orders.html" style="display: inline-block; padding: 6px 12px; background: #6366f1; color: white; border-radius: 4px; text-decoration: none; font-size: 12px; margin: 0 8px; font-weight: 600;">📦 Đơn hàng</a>
+          <a href="/shop-orders.html" style="display: inline-block; padding: 6px 12px; background: #f97316; color: white; border-radius: 4px; text-decoration: none; font-size: 12px; margin-right: 8px; font-weight: 600;">🏪 Shop</a>
           <button id="logout-btn" class="logout">Đăng xuất</button>
         </div>
       </header>
@@ -57,9 +59,36 @@
       <span class="close">&times;</span>
       <h2>🍜 Đặt đồ ăn Mường Lèo</h2>
       
+      <div class="form-section">
+        <h3>📋 Thông tin người đặt</h3>
+        <div class="form-group">
+          <label for="order-name">Tên người đặt:</label>
+          <input type="text" id="order-name" placeholder="VD: Nguyễn Văn A" required>
+        </div>
+        <div class="form-group">
+          <label for="order-phone">Số điện thoại:</label>
+          <input type="tel" id="order-phone" placeholder="VD: 0123456789" required>
+        </div>
+        <div class="form-group">
+          <label for="order-address">Địa chỉ nhận hàng:</label>
+          <textarea id="order-address" placeholder="VD: 123 Đường Nguyễn Huệ, Quận 1, TP.HCM" rows="3" required></textarea>
+        </div>
+        <div class="form-group">
+          <label for="order-contact">Phương thức liên lạc:</label>
+          <select id="order-contact" required>
+            <option value="">-- Chọn phương thức --</option>
+            <option value="phone">Điện thoại</option>
+            <option value="sms">SMS</option>
+            <option value="zalo">Zalo</option>
+            <option value="facebook">Facebook</option>
+          </select>
+        </div>
+      </div>
+      
       <div class="menu-container">
+        <h3>🍲 Chọn món ăn</h3>
         <div class="menu-category">
-          <h3>🍲 Mặn</h3>
+          <h4>🍲 Mặn</h4>
           <div class="menu-items">
             <label class="menu-item">
               <input type="checkbox" name="food" value="Cơm tấm" data-price="30000">
@@ -85,7 +114,7 @@
         </div>
 
         <div class="menu-category">
-          <h3>🍹 Đồ uống</h3>
+          <h4>🍹 Đồ uống</h4>
           <div class="menu-items">
             <label class="menu-item">
               <input type="checkbox" name="food" value="Nước chanh" data-price="10000">
