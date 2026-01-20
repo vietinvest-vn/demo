@@ -3,7 +3,7 @@ const path = require('path');
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
-const { Pool } = require('pg');
+const { MongoClient, ObjectId } = require('mongodb');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
@@ -18,48 +18,33 @@ const io = new Server(server, {
 
 const PORT = process.env.PORT || 8000;
 const JWT_SECRET = process.env.JWT_SECRET || 'your_secret_key';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://vietinvesttvn_db_user:31acznx3P14AMR2D@cluster0.bauzlwl.mongodb.net/?appName=Cluster0';
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
-// PostgreSQL Database Setup
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || 'postgresql://localhost:5432/hichat'
-});
+// MongoDB Database Setup
+let db;
+const mongoClient = new MongoClient(MONGODB_URI);
 
-pool.on('error', (err) => {
-  console.error('Unexpected error on idle client', err);
-});
-
-// Initialize database tables
 async function initDb() {
   try {
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS users (
-        id SERIAL PRIMARY KEY,
-        username VARCHAR(50) UNIQUE NOT NULL,
-        password VARCHAR(255) NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
+    await mongoClient.connect();
+    db = mongoClient.db('hichat');
     
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS messages (
-        id SERIAL PRIMARY KEY,
-        user_id INTEGER REFERENCES users(id),
-        text TEXT NOT NULL,
-        deleted BOOLEAN DEFAULT false,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
+    // Create collections and indexes
+    const usersCollection = db.collection('users');
+    const messagesCollection = db.collection('messages');
     
-    console.log('✅ Database tables initialized');
+    await usersCollection.createIndex({ username: 1 }, { unique: true }).catch(() => {});
+    await messagesCollection.createIndex({ createdAt: -1 }).catch(() => {});
+    
+    console.log('✅ Connected to MongoDB and collections initialized');
   } catch (err) {
     console.error('Database initialization error:', err);
+    process.exit(1);
   }
 }
-
-initDb();
 
 // JWT Middleware
 const verifyToken = (req, res, next) => {
@@ -86,26 +71,30 @@ app.post('/api/register', async (req, res) => {
   
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
-    const result = await pool.query(
-      'INSERT INTO users (username, password) VALUES ($1, $2) RETURNING id, username',
-      [username, hashedPassword]
-    );
+    const usersCollection = db.collection('users');
+    
+    const result = await usersCollection.insertOne({
+      username,
+      password: hashedPassword,
+      createdAt: new Date()
+    });
     
     const token = jwt.sign(
-      { id: result.rows[0].id, username: result.rows[0].username },
+      { id: result.insertedId.toString(), username },
       JWT_SECRET,
       { expiresIn: '7d' }
     );
     
-    res.json({ token, username: result.rows[0].username });
+    res.json({ token, username });
   } catch (err) {
-    if (err.code === '23505') {
+    if (err.code === 11000) {
       return res.status(400).json({ error: 'Username already exists' });
     }
     res.status(500).json({ error: 'Registration failed' });
   }
 });
 
+// Login Route
 app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
   
@@ -114,13 +103,13 @@ app.post('/api/login', async (req, res) => {
   }
   
   try {
-    const result = await pool.query('SELECT id, username, password FROM users WHERE username = $1', [username]);
+    const usersCollection = db.collection('users');
+    const user = await usersCollection.findOne({ username });
     
-    if (result.rows.length === 0) {
+    if (!user) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
     
-    const user = result.rows[0];
     const isPasswordValid = await bcrypt.compare(password, user.password);
     
     if (!isPasswordValid) {
@@ -128,7 +117,7 @@ app.post('/api/login', async (req, res) => {
     }
     
     const token = jwt.sign(
-      { id: user.id, username: user.username },
+      { id: user._id.toString(), username: user.username },
       JWT_SECRET,
       { expiresIn: '7d' }
     );
@@ -139,18 +128,23 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-// Get recent messages from DB
+// Get recent messages
 async function getRecentMessages() {
   try {
-    const result = await pool.query(`
-      SELECT m.id, m.text, u.username, m.created_at as ts, m.deleted
-      FROM messages m
-      JOIN users u ON m.user_id = u.id
-      WHERE m.deleted = false
-      ORDER BY m.created_at DESC
-      LIMIT 100
-    `);
-    return result.rows.reverse();
+    const messagesCollection = db.collection('messages');
+    const messages = await messagesCollection
+      .find({ deleted: false })
+      .sort({ createdAt: -1 })
+      .limit(100)
+      .toArray();
+    
+    return messages.reverse().map(msg => ({
+      id: msg._id.toString(),
+      text: msg.text,
+      username: msg.username,
+      ts: msg.createdAt.getTime(),
+      deleted: msg.deleted
+    }));
   } catch (err) {
     console.error('Get messages error:', err);
     return [];
@@ -158,13 +152,17 @@ async function getRecentMessages() {
 }
 
 // Save message to DB
-async function saveMessage(userId, text) {
+async function saveMessage(userId, username, text) {
   try {
-    const result = await pool.query(
-      'INSERT INTO messages (user_id, text) VALUES ($1, $2) RETURNING id',
-      [userId, text]
-    );
-    return result.rows[0].id;
+    const messagesCollection = db.collection('messages');
+    const result = await messagesCollection.insertOne({
+      userId: new ObjectId(userId),
+      username,
+      text,
+      deleted: false,
+      createdAt: new Date()
+    });
+    return result.insertedId.toString();
   } catch (err) {
     console.error('Save message error:', err);
     return null;
@@ -174,7 +172,11 @@ async function saveMessage(userId, text) {
 // Delete message
 async function deleteMessage(msgId) {
   try {
-    await pool.query('UPDATE messages SET deleted = true WHERE id = $1', [msgId]);
+    const messagesCollection = db.collection('messages');
+    await messagesCollection.updateOne(
+      { _id: new ObjectId(msgId) },
+      { $set: { deleted: true } }
+    );
     return true;
   } catch (err) {
     console.error('Delete message error:', err);
@@ -182,10 +184,10 @@ async function deleteMessage(msgId) {
   }
 }
 
-// Store connected users
+// Socket.IO Setup
 const connectedUsers = new Map();
 
-io.on('connection', socket => {
+io.on('connection', (socket) => {
   let userId = null;
   let username = 'Anonymous';
 
@@ -219,7 +221,7 @@ io.on('connection', socket => {
     }
     
     const cleanText = (text || '').toString().slice(0, 500);
-    const msgId = await saveMessage(userId, cleanText);
+    const msgId = await saveMessage(userId, username, cleanText);
     
     if (msgId) {
       const message = {
@@ -252,6 +254,12 @@ io.on('connection', socket => {
   });
 });
 
-server.listen(PORT, () => {
-  console.log(`Chat server running at http://localhost:${PORT}`);
+// Initialize database and start server
+initDb().then(() => {
+  server.listen(PORT, () => {
+    console.log(`Chat server running at http://localhost:${PORT}`);
+  });
+}).catch(err => {
+  console.error('Failed to initialize database:', err);
+  process.exit(1);
 });
