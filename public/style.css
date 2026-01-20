@@ -25,6 +25,87 @@ body {
   color: var(--text);
 }
 
+/* Auth Screen */
+.auth-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+}
+
+.auth-card {
+  background: var(--card);
+  border: 1px solid #1f2937;
+  border-radius: 16px;
+  padding: 40px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.auth-card h1 {
+  margin: 0 0 30px;
+  font-size: 32px;
+  text-align: center;
+}
+
+#auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+#auth-form input,
+#auth-form button {
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid #1f2937;
+  background: var(--bubble);
+  color: var(--text);
+  font-size: 14px;
+}
+
+#auth-form input {
+  font-family: inherit;
+}
+
+#auth-form input:focus {
+  outline: 2px solid var(--accent);
+}
+
+#auth-form button {
+  cursor: pointer;
+  background: var(--accent);
+  border: none;
+  font-weight: 600;
+  transition: opacity 0.2s;
+}
+
+#auth-form button:hover {
+  opacity: 0.9;
+}
+
+#auth-form button.secondary {
+  background: #374151;
+}
+
+#auth-form button.secondary:hover {
+  background: #4b5563;
+}
+
+.error-text {
+  color: #ef4444;
+  font-size: 13px;
+  margin-top: 10px;
+  text-align: center;
+}
+
+/* Chat Screen */
+.chat-screen {
+  min-height: 100vh;
+}
+
 .app {
   max-width: 1200px;
   margin: 0 auto;
@@ -48,6 +129,23 @@ header {
   display: flex;
   align-items: center;
   gap: 8px;
+  color: var(--muted);
+}
+
+#logout-btn {
+  padding: 8px 12px;
+  background: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+#logout-btn:hover {
+  background: #b91c1c;
+}
   color: var(--muted);
 }
 

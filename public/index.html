@@ -1,12 +1,28 @@
 <!doctype html>
 <html lang="vi">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>HiChat</title>
-    <link rel="stylesheet" href="/style.css" />
-  </head>
-  <body>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HiChat</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <!-- Auth Screen -->
+  <div id="auth-screen" class="auth-screen">
+    <div class="auth-card">
+      <h1>HiChat</h1>
+      <div id="auth-form">
+        <input id="auth-username" type="text" placeholder="Tên đăng nhập" />
+        <input id="auth-password" type="password" placeholder="Mật khẩu" />
+        <button id="login-btn">Đăng nhập</button>
+        <button id="register-btn" class="secondary">Đăng ký</button>
+      </div>
+      <p id="auth-error" class="error-text"></p>
+    </div>
+  </div>
+
+  <!-- Chat Screen -->
+  <div id="chat-screen" class="chat-screen" style="display: none;">
     <div class="app">
       <header>
         <div class="brand">HiChat</div>
@@ -14,23 +30,13 @@
           <span id="self-name"></span>
           <span class="dot"></span>
           <span>Đang kết nối</span>
+          <button id="logout-btn" class="logout">Đăng xuất</button>
         </div>
       </header>
 
       <main>
         <section class="sidebar">
-          <div class="card">
-            <label for="name">Tên hiển thị</label>
-            <div class="inline">
-              <input id="name" type="text" placeholder="Ví dụ: HiChat" />
-              <button id="save-name">Lưu</button>
-            </div>
-            <p class="hint">
-              Mẹo: đặt tên trước khi gửi tin để mọi người nhận ra bạn.
-            </p>
-          </div>
-
-          <div class="card">
+          <div class="card small">
             <h4>👥 Online (<span id="online-count">0</span>)</h4>
             <div id="online-users" class="users-list"></div>
           </div>
@@ -44,18 +50,15 @@
         <section class="chat">
           <div id="messages" class="messages"></div>
           <form id="chat-form" autocomplete="off">
-            <input
-              id="m"
-              maxlength="500"
-              placeholder="Nhập tin nhắn... (**bold**, *italic*, `code`)"
-            />
+            <input id="m" maxlength="500" placeholder="Nhập tin nhắn... (**bold**, *italic*, `code`)" />
             <button type="submit">Gửi</button>
           </form>
         </section>
       </main>
     </div>
+  </div>
 
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="/app.js"></script>
-  </body>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/app.js"></script>
+</body>
 </html>
