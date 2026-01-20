@@ -27,6 +27,11 @@
           </div>
 
           <div class="card small">
+            <h4>🍜 Mường Lèo</h4>
+            <button id="order-btn" class="order-btn">Đặt đồ ăn</button>
+          </div>
+
+          <div class="card small">
             <div class="typing" id="typing"></div>
             <p class="hint">Gõ tin nhắn để thấy trạng thái đang nhập.</p>
           </div>
@@ -45,5 +50,68 @@
 
   <script src="/socket.io/socket.io.js"></script>
   <script src="/app.js"></script>
-</body>
-</html>
+
+  <!-- Order Modal -->
+  <div id="order-modal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2>🍜 Đặt đồ ăn Mường Lèo</h2>
+      
+      <div class="menu-container">
+        <div class="menu-category">
+          <h3>🍲 Mặn</h3>
+          <div class="menu-items">
+            <label class="menu-item">
+              <input type="checkbox" name="food" value="Cơm tấm" data-price="30000">
+              <span>Cơm tấm - 30.000đ</span>
+            </label>
+            <label class="menu-item">
+              <input type="checkbox" name="food" value="Cơm chiên" data-price="35000">
+              <span>Cơm chiên - 35.000đ</span>
+            </label>
+            <label class="menu-item">
+              <input type="checkbox" name="food" value="Bún chả" data-price="40000">
+              <span>Bún chả - 40.000đ</span>
+            </label>
+            <label class="menu-item">
+              <input type="checkbox" name="food" value="Phở" data-price="38000">
+              <span>Phở - 38.000đ</span>
+            </label>
+            <label class="menu-item">
+              <input type="checkbox" name="food" value="Bánh mì" data-price="20000">
+              <span>Bánh mì - 20.000đ</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="menu-category">
+          <h3>🍹 Đồ uống</h3>
+          <div class="menu-items">
+            <label class="menu-item">
+              <input type="checkbox" name="food" value="Nước chanh" data-price="10000">
+              <span>Nước chanh - 10.000đ</span>
+            </label>
+            <label class="menu-item">
+              <input type="checkbox" name="food" value="Nước cam" data-price="12000">
+              <span>Nước cam - 12.000đ</span>
+            </label>
+            <label class="menu-item">
+              <input type="checkbox" name="food" value="Cà phê" data-price="15000">
+              <span>Cà phê - 15.000đ</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="order-summary">
+        <h4>Tổng cộng: <span id="total-price">0</span>đ</h4>
+        <textarea id="order-note" placeholder="Ghi chú thêm..." rows="3"></textarea>
+      </div>
+
+      <div class="order-actions">
+        <button id="submit-order-btn" class="btn-submit">Đặt hàng</button>
+        <button class="btn-cancel">Huỷ</button>
+      </div>
+    </div>
+  </div>
+

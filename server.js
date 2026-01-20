@@ -128,6 +128,61 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
+// Order Route
+app.post('/api/orders', verifyToken, async (req, res) => {
+  const { items, note, total, username } = req.body;
+  
+  if (!items || items.length === 0) {
+    return res.status(400).json({ error: 'No items in order' });
+  }
+  
+  try {
+    const ordersCollection = db.collection('orders');
+    
+    const result = await ordersCollection.insertOne({
+      userId: new ObjectId(req.userId),
+      username: req.username,
+      items,
+      note: note || '',
+      total,
+      status: 'pending',
+      createdAt: new Date()
+    });
+    
+    res.json({ 
+      orderId: result.insertedId.toString(),
+      message: 'Order placed successfully'
+    });
+  } catch (err) {
+    console.error('Order error:', err);
+    res.status(500).json({ error: 'Failed to place order' });
+  }
+});
+
+// Get user's orders
+app.get('/api/orders', verifyToken, async (req, res) => {
+  try {
+    const ordersCollection = db.collection('orders');
+    
+    const orders = await ordersCollection
+      .find({ userId: new ObjectId(req.userId) })
+      .sort({ createdAt: -1 })
+      .toArray();
+    
+    res.json(orders.map(order => ({
+      id: order._id.toString(),
+      items: order.items,
+      note: order.note,
+      total: order.total,
+      status: order.status,
+      createdAt: order.createdAt
+    })));
+  } catch (err) {
+    console.error('Get orders error:', err);
+    res.status(500).json({ error: 'Failed to get orders' });
+  }
+});
+
 // Get recent messages
 async function getRecentMessages() {
   try {

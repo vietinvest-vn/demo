@@ -18,6 +18,15 @@ const selfNameEl = document.getElementById('self-name');
 const typingEl = document.getElementById('typing');
 const logoutBtn = document.getElementById('logout-btn');
 
+// Order Elements
+const orderBtn = document.getElementById('order-btn');
+const orderModal = document.getElementById('order-modal');
+const submitOrderBtn = document.getElementById('submit-order-btn');
+const closeBtn = document.querySelector('.close');
+const cancelBtn = document.querySelector('.btn-cancel');
+const orderNote = document.getElementById('order-note');
+const totalPriceEl = document.getElementById('total-price');
+
 let typingTimeout;
 
 // Markdown parser
@@ -149,4 +158,88 @@ form.addEventListener('submit', (e) => {
 
 input.addEventListener('input', () => {
   socket.emit('typing', input.value.length > 0);
+});
+// Order Modal Functions
+function openOrderModal() {
+  orderModal.classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeOrderModal() {
+  orderModal.classList.remove('show');
+  document.body.style.overflow = 'auto';
+  resetOrderForm();
+}
+
+function resetOrderForm() {
+  document.querySelectorAll('input[name="food"]').forEach(cb => cb.checked = false);
+  orderNote.value = '';
+  updateTotalPrice();
+}
+
+function updateTotalPrice() {
+  let total = 0;
+  document.querySelectorAll('input[name="food"]:checked').forEach(cb => {
+    total += parseInt(cb.dataset.price);
+  });
+  totalPriceEl.textContent = total.toLocaleString('vi-VN');
+}
+
+async function submitOrder() {
+  const items = Array.from(document.querySelectorAll('input[name="food"]:checked')).map(cb => ({
+    name: cb.value,
+    price: parseInt(cb.dataset.price)
+  }));
+  
+  if (items.length === 0) {
+    alert('Vui lòng chọn ít nhất một món ăn');
+    return;
+  }
+  
+  const note = orderNote.value.trim();
+  const total = items.reduce((sum, item) => sum + item.price, 0);
+  
+  try {
+    const res = await fetch('/api/orders', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        items,
+        note,
+        total,
+        username
+      })
+    });
+    
+    if (res.ok) {
+      const orderMsg = `🍜 Đặt hàng Mường Lèo: ${items.map(i => i.name).join(', ')} | Tổng: ${total.toLocaleString('vi-VN')}đ ${note ? '(Ghi chú: ' + note + ')' : ''}`;
+      socket.emit('chatMessage', orderMsg);
+      alert('✅ Đặt hàng thành công!');
+      closeOrderModal();
+    } else {
+      alert('❌ Lỗi khi đặt hàng');
+    }
+  } catch (err) {
+    console.error('Order error:', err);
+    alert('❌ Không thể đặt hàng');
+  }
+}
+
+// Order Event Listeners
+orderBtn.addEventListener('click', openOrderModal);
+closeBtn.addEventListener('click', closeOrderModal);
+cancelBtn.addEventListener('click', closeOrderModal);
+submitOrderBtn.addEventListener('click', submitOrder);
+
+window.addEventListener('click', (e) => {
+  if (e.target === orderModal) {
+    closeOrderModal();
+  }
+});
+
+document.querySelectorAll('input[name="food"]').forEach(cb => {
+  cb.addEventListener('change', updateTotalPrice);
 });
