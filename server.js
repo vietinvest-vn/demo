@@ -13,8 +13,12 @@ const PORT = process.env.PORT || 8000;
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
-// SQLite Database Setup
-const db = new sqlite3.Database(path.join(__dirname, 'chat.db'));
+// SQLite Database Setup - use /tmp for Render (persistent on instance)
+const dbPath = process.env.NODE_ENV === 'production' 
+  ? '/tmp/chat.db' 
+  : path.join(__dirname, 'chat.db');
+  
+const db = new sqlite3.Database(dbPath);
 
 db.serialize(() => {
   db.run(`
