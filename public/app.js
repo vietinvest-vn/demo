@@ -1,14 +1,12 @@
 const socket = io();
 
-// Auth Elements
-const authScreen = document.getElementById('auth-screen');
-const chatScreen = document.getElementById('chat-screen');
-const authUsername = document.getElementById('auth-username');
-const authPassword = document.getElementById('auth-password');
-const loginBtn = document.getElementById('login-btn');
-const registerBtn = document.getElementById('register-btn');
-const authError = document.getElementById('auth-error');
-const logoutBtn = document.getElementById('logout-btn');
+// Check auth
+const token = localStorage.getItem('hichat:token');
+const username = localStorage.getItem('hichat:username');
+
+if (!token || !username) {
+  window.location.href = '/login.html';
+}
 
 // Chat Elements
 const messagesEl = document.getElementById('messages');
@@ -18,9 +16,8 @@ const onlineUsersEl = document.getElementById('online-users');
 const onlineCountEl = document.getElementById('online-count');
 const selfNameEl = document.getElementById('self-name');
 const typingEl = document.getElementById('typing');
+const logoutBtn = document.getElementById('logout-btn');
 
-let token = localStorage.getItem('hichat:token');
-let username = localStorage.getItem('hichat:username');
 let typingTimeout;
 
 // Markdown parser
@@ -82,104 +79,6 @@ function renderMessage(msg) {
   messagesEl.scrollTop = messagesEl.scrollHeight;
 }
 
-// Auth Functions
-async function login() {
-  const user = authUsername.value.trim();
-  const pass = authPassword.value.trim();
-  
-  if (!user || !pass) {
-    authError.textContent = 'Vui lòng nhập tên và mật khẩu';
-    return;
-  }
-  
-  try {
-    const res = await fetch('/api/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: user, password: pass })
-    });
-    
-    const data = await res.json();
-    
-    if (!res.ok) {
-      authError.textContent = data.error || 'Đăng nhập thất bại';
-      return;
-    }
-    
-    token = data.token;
-    username = data.username;
-    localStorage.setItem('hichat:token', token);
-    localStorage.setItem('hichat:username', username);
-    
-    showChat();
-  } catch (err) {
-    authError.textContent = 'Lỗi kết nối';
-  }
-}
-
-async function register() {
-  const user = authUsername.value.trim();
-  const pass = authPassword.value.trim();
-  
-  if (!user || !pass) {
-    authError.textContent = 'Vui lòng nhập tên và mật khẩu';
-    return;
-  }
-  
-  try {
-    const res = await fetch('/api/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: user, password: pass })
-    });
-    
-    const data = await res.json();
-    
-    if (!res.ok) {
-      authError.textContent = data.error || 'Đăng ký thất bại';
-      return;
-    }
-    
-    token = data.token;
-    username = data.username;
-    localStorage.setItem('hichat:token', token);
-    localStorage.setItem('hichat:username', username);
-    
-    showChat();
-  } catch (err) {
-    authError.textContent = 'Lỗi kết nối';
-  }
-}
-
-function logout() {
-  localStorage.removeItem('hichat:token');
-  localStorage.removeItem('hichat:username');
-  token = null;
-  username = null;
-  messagesEl.innerHTML = '';
-  showAuth();
-  socket.disconnect();
-}
-
-function showAuth() {
-  authScreen.style.display = 'flex';
-  chatScreen.style.display = 'none';
-  authError.textContent = '';
-  authUsername.value = '';
-  authPassword.value = '';
-}
-
-function showChat() {
-  authScreen.style.display = 'none';
-  chatScreen.style.display = 'block';
-  selfNameEl.textContent = username;
-  
-  if (socket.disconnected) {
-    socket.connect();
-  }
-  socket.emit('authenticate', { token });
-}
-
 function updateOnlineUsers(users) {
   onlineCountEl.textContent = users.length;
   onlineUsersEl.innerHTML = '';
@@ -192,14 +91,24 @@ function updateOnlineUsers(users) {
   });
 }
 
+function logout() {
+  localStorage.removeItem('hichat:token');
+  localStorage.removeItem('hichat:username');
+  window.location.href = '/login.html';
+}
+
+// Initialize
+selfNameEl.textContent = username;
+socket.emit('authenticate', { token });
+
 // Socket Events
 socket.on('authenticated', () => {
   console.log('✅ Authenticated');
 });
 
 socket.on('authError', (err) => {
-  authError.textContent = err;
-  showAuth();
+  console.error('Auth error:', err);
+  window.location.href = '/login.html';
 });
 
 socket.on('recentMessages', (messages) => {
@@ -227,17 +136,7 @@ socket.on('typing', (payload) => {
 });
 
 // Event Listeners
-loginBtn.addEventListener('click', login);
-registerBtn.addEventListener('click', register);
 logoutBtn.addEventListener('click', logout);
-
-authUsername.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') login();
-});
-
-authPassword.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') login();
-});
 
 form.addEventListener('submit', (e) => {
   e.preventDefault();
@@ -251,10 +150,3 @@ form.addEventListener('submit', (e) => {
 input.addEventListener('input', () => {
   socket.emit('typing', input.value.length > 0);
 });
-
-// Initialize
-if (token && username) {
-  showChat();
-} else {
-  showAuth();
-}

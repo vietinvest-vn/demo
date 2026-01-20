@@ -1,64 +1,17 @@
 <!doctype html>
-<html lang="vi">
+<html>
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>HiChat</title>
-  <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
-  <!-- Auth Screen -->
-  <div id="auth-screen" class="auth-screen">
-    <div class="auth-card">
-      <h1>HiChat</h1>
-      <div id="auth-form">
-        <input id="auth-username" type="text" placeholder="Tên đăng nhập" />
-        <input id="auth-password" type="password" placeholder="Mật khẩu" />
-        <button id="login-btn">Đăng nhập</button>
-        <button id="register-btn" class="secondary">Đăng ký</button>
-      </div>
-      <p id="auth-error" class="error-text"></p>
-    </div>
-  </div>
-
-  <!-- Chat Screen -->
-  <div id="chat-screen" class="chat-screen" style="display: none;">
-    <div class="app">
-      <header>
-        <div class="brand">HiChat</div>
-        <div class="status">
-          <span id="self-name"></span>
-          <span class="dot"></span>
-          <span>Đang kết nối</span>
-          <button id="logout-btn" class="logout">Đăng xuất</button>
-        </div>
-      </header>
-
-      <main>
-        <section class="sidebar">
-          <div class="card small">
-            <h4>👥 Online (<span id="online-count">0</span>)</h4>
-            <div id="online-users" class="users-list"></div>
-          </div>
-
-          <div class="card small">
-            <div class="typing" id="typing"></div>
-            <p class="hint">Gõ tin nhắn để thấy trạng thái đang nhập.</p>
-          </div>
-        </section>
-
-        <section class="chat">
-          <div id="messages" class="messages"></div>
-          <form id="chat-form" autocomplete="off">
-            <input id="m" maxlength="500" placeholder="Nhập tin nhắn... (**bold**, *italic*, `code`)" />
-            <button type="submit">Gửi</button>
-          </form>
-        </section>
-      </main>
-    </div>
-  </div>
-
-  <script src="/socket.io/socket.io.js"></script>
-  <script src="/app.js"></script>
+  <script>
+    const token = localStorage.getItem('hichat:token');
+    if (token) {
+      window.location.href = '/chat.html';
+    } else {
+      window.location.href = '/login.html';
+    }
+  </script>
 </body>
 </html>

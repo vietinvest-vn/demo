@@ -101,6 +101,59 @@ body {
   text-align: center;
 }
 
+.auth-link {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.auth-link a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.auth-link a:hover {
+  text-decoration: underline;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+form button {
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: none;
+  background: var(--accent);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 14px;
+  transition: opacity 0.2s;
+}
+
+form button:hover {
+  opacity: 0.9;
+}
+
+form input {
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid #1f2937;
+  background: var(--bubble);
+  color: var(--text);
+  font-size: 14px;
+  font-family: inherit;
+}
+
+form input:focus {
+  outline: 2px solid var(--accent);
+}
+
 /* Chat Screen */
 .chat-screen {
   min-height: 100vh;

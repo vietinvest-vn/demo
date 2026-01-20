@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HiChat - Chat</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <div class="chat-screen">
+    <div class="app">
+      <header>
+        <div class="brand">HiChat</div>
+        <div class="status">
+          <span id="self-name"></span>
+          <span class="dot"></span>
+          <span>Đang kết nối</span>
+          <button id="logout-btn" class="logout">Đăng xuất</button>
+        </div>
+      </header>
+
+      <main>
+        <section class="sidebar">
+          <div class="card small">
+            <h4>👥 Online (<span id="online-count">0</span>)</h4>
+            <div id="online-users" class="users-list"></div>
+          </div>
+
+          <div class="card small">
+            <div class="typing" id="typing"></div>
+            <p class="hint">Gõ tin nhắn để thấy trạng thái đang nhập.</p>
+          </div>
+        </section>
+
+        <section class="chat">
+          <div id="messages" class="messages"></div>
+          <form id="chat-form" autocomplete="off">
+            <input id="m" maxlength="500" placeholder="Nhập tin nhắn... (**bold**, *italic*, `code`)" />
+            <button type="submit">Gửi</button>
+          </form>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>

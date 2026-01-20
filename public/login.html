@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HiChat - Đăng Nhập</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <div class="auth-screen">
+    <div class="auth-card">
+      <h1>HiChat</h1>
+      <h2>Đăng Nhập</h2>
+      
+      <form id="login-form">
+        <input id="login-username" type="text" placeholder="Tên đăng nhập" required />
+        <input id="login-password" type="password" placeholder="Mật khẩu" required />
+        <button type="submit">Đăng Nhập</button>
+      </form>
+      
+      <p id="login-error" class="error-text"></p>
+      
+      <p class="auth-link">
+        Chưa có tài khoản? <a href="/register.html">Đăng ký ngay</a>
+      </p>
+    </div>
+  </div>
+
+  <script src="/app-auth.js"></script>
+  <script>
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const username = document.getElementById('login-username').value.trim();
+      const password = document.getElementById('login-password').value.trim();
+      const errorEl = document.getElementById('login-error');
+      
+      if (!username || !password) {
+        errorEl.textContent = 'Vui lòng nhập đủ thông tin';
+        return;
+      }
+      
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+        
+        const data = await res.json();
+        
+        if (!res.ok) {
+          errorEl.textContent = data.error || 'Đăng nhập thất bại';
+          return;
+        }
+        
+        localStorage.setItem('hichat:token', data.token);
+        localStorage.setItem('hichat:username', data.username);
+        window.location.href = '/chat.html';
+      } catch (err) {
+        errorEl.textContent = 'Lỗi kết nối';
+      }
+    });
+  </script>
+</body>
+</html>
